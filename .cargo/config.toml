@@ -1,0 +1,5 @@
+[profile.dist]
+inherits = "release"
+opt-level = "z" # Optimize for size, but also turn off loop vectorization
+strip = true
+lto = true
