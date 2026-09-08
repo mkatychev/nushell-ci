@@ -1,0 +1,31 @@
+version: 2
+
+updates:
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "dependencies"
+      - "submodule"
+    # Only propose updates that correspond to real semver tags.
+    #
+    # Per https://github.com/dependabot/dependabot-core/pull/13052, every commit on the tracked branch
+    # is modeled as a `0.0.0-0.#` pseudo-version, while real tags surface as
+    # their actual semver version (e.g. `0.115.1`).
+    ignore:
+      - dependency-name: "nushell"
+        versions: [">= 0.0.0-0, < 0.0.1"]
+
+  # Keep GitHub Actions used by the release workflow up to date.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+      - "github-actions"
