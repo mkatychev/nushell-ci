@@ -127,18 +127,17 @@ jobs:
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
             echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           fi
-      - name: "Mark git repositories as safe (containerized builds)"
+      - name: "mark git repositories as safe"
         if: "${{ matrix.container }}"
         run: |
           git config --global --add safe.directory '*'
         shell: "bash"
-      - name: "Set up musl cross-compilation toolchain"
+      - name: "linux-musl cross-compilation toolchain setup"
         if: "${{ contains(join(matrix.targets), 'musl') && runner.os == 'Linux' }}"
         run: |
           sudo apt-get update
           sudo apt-get install -y musl-tools
-          # Install the musl std against the toolchain pinned by the submodule's
-          # rust-toolchain.toml (the override is active inside ./nushell).
+          # Install the musl std against the toolchain inside submodule
           for target in ${{ join(matrix.targets, ' ') }}; do
             case "$target" in
               *-musl)
