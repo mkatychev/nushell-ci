@@ -23,6 +23,9 @@ default-features = false
 features = ["network", "plugin", "rustls-tls", "sqlite"]
 precise-builds = true
 
+# handle linux-musl problems
+github-build-setup = "../build-setup.yml"
+
 [workspace]
 repository = "https://github.com/mkatychev/nushell-ci"
 # Only build the nu package, exclude all plugins

@@ -1,0 +1,17 @@
+# Handle cross-compilation for `*-unknown-linux-musl` `./nushell` submodule
+# pins a specific Rust toolchain via `rust-toolchain.toml` ("1.96.1" as of this
+# comment).
+- name: Set up musl cross-compilation toolchain
+  if: ${{ contains(join(matrix.targets), 'musl') && runner.os == 'Linux' }}
+  shell: bash
+  run: |
+    sudo apt-get update
+    sudo apt-get install -y musl-tools
+    # Install the musl std against the toolchain inside submodule
+    for target in ${{ join(matrix.targets, ' ') }}; do
+      case "$target" in
+        *-musl)
+          (cd nushell && rustup target add "$target")
+          ;;
+      esac
+    done
