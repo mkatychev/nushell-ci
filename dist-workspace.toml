@@ -21,9 +21,10 @@ install-updater = false
 default-features = false
 # Features to pass to cargo build
 features = ["network", "plugin", "rustls-tls", "sqlite"]
+precise-builds = true
 
 [workspace]
-repository = "https://github.com/nushell/nushell"
+repository = "https://github.com/mkatychev/nushell-ci"
 # Only build the nu package, exclude all plugins
 packages = ["nu"]
 members = [
