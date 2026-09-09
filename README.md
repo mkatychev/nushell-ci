@@ -1,6 +1,6 @@
 # nushell-ci
 
-Semi-automated repo providing nushell binaries optimized for CI using [`dist`](https://axodotdev.github.io/cargo-dist/)
+Semi-automated[^1] repo providing nushell binaries optimized for CI using [`dist`](https://axodotdev.github.io/cargo-dist/)
 
 
 ## Details
@@ -29,6 +29,9 @@ The nushell artifacts in this repo try to limit the download artifact size as mu
   | nu-0.115.1-aarch64-unknown-linux-musl/nu_plugin_query            | file | 18.8 MB  |
   | nu-0.115.1-aarch64-unknown-linux-musl/nu_plugin_stress_internals | file | 731.0 kB |
   ```
-* use a build profile that is optimized for size:
-  https://github.com/mkatychev/nushell-ci/blob/a77aa872ed8528450b102d3aa481074f84bb129b/.cargo/config.toml
+* use a build profile that is optimized for size[^2]:
+  https://github.com/mkatychev/nushell-ci/blob/021bb7d8d7d733f4f9d5ec22686e88d20a680758/.cargo/config.toml#L1-L5
 
+
+[^1]: https://github.com/mkatychev/nushell-ci/blob/main/.github/dependabot.yml
+[^2]: [2026-08-31 benchmarks](https://github.com/mkatychev/nushell-ci/blob/b2ec1d36b149a19e630712f7a8c0e1037599e9b9/docs/benchmarks-2026-08-31.md)
