@@ -1,14 +1,10 @@
 name: Rewrite Dependabot submodule PR title
 
-# Dependabot proposes submodule bumps with abbreviated commit SHAs in the PR
-# title, e.g. `chore: bump nushell from `00c9ee0` to `798c55d``. This workflow
-# resolves each SHA to the git tag that points at it (via
-# `git tag --points-at <sha> | head -n 1` inside the nushell submodule) and
-# rewrites the title to use the tag names instead, e.g.
-# `chore: bump nushell from `0.115.0` to `0.115.1``.
-#
-# The rewrite logic runs in Nushell.
-
+# This workflow resolves each SHA in a dependabot submodule bump to the relevant git tag:
+# before:
+#  `chore: bump nushell from `00c9ee0` to `798c55d`
+# after:
+#  `chore: bump nushell from `0.115.0` to `0.115.1`
 on:
   pull_request:
     types: [opened, reopened, synchronize]
@@ -34,8 +30,6 @@ jobs:
       - name: Install Nushell
         run: |
           curl --proto '=https' --tlsv1.2 -LsSf https://github.com/mkatychev/nushell-ci/releases/download/0.115.0/nu-installer.sh | sh
-          # Expose the installed `nu` binary on PATH for subsequent steps.
-          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
       - name: Fetch submodule tags
         working-directory: nushell
@@ -48,25 +42,17 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          let title = $env.PR_TITLE
-          print $"Original title: ($title)"
+          let raw = $env.PR_TITLE
+          print $"Original title: ($raw)"
 
-          # Extract the two backticked SHAs from a title of the form:
-          #   chore: bump nushell from `<from>` to `<to>`
-          let shas = (
-            $title
-            | parse --regex '`(?<sha>[0-9a-f]+)`'
-            | get sha
-          )
+          # Parse the two backticked SHAs from a title of the form:
+          #   chore: bump nushell from `<old>` to `<new>`
+          let title = ($raw | parse '{_}bump nushell from `{old}` to `{new}`' | first)
 
-          if ($shas | length) < 2 {
-            print "Could not extract two SHAs from title; leaving title unchanged."
-            exit 0
+          if ($title | is-empty) {
+            error make "Could not parse SHAs from title; leaving title unchanged."
           }
-
-          let from_sha = ($shas | get 0)
-          let to_sha = ($shas | get 1)
-          print $"from_sha=($from_sha) to_sha=($to_sha)"
+          print $"old=($title.old) new=($title.new)"
 
           def resolve_tag [sha: string] {
             git -C nushell tag --points-at $sha
@@ -75,22 +61,21 @@ jobs:
             | default ""
           }
 
-          let from_tag = (resolve_tag $from_sha)
-          let to_tag = (resolve_tag $to_sha)
-          print $"from_tag=($from_tag) to_tag=($to_tag)"
+          let old_tag = (resolve_tag $title.old)
+          let new_tag = (resolve_tag $title.new)
+          print $"old_tag=($old_tag) new_tag=($new_tag)"
 
-          if ($from_tag | is-empty) or ($to_tag | is-empty) {
-            print "One or both commits are not tagged; leaving title unchanged."
-            exit 0
+          if ($old_tag | is-empty) or ($new_tag | is-empty) {
+            error make "One or both commits are not tagged; leaving title unchanged."
           }
 
           let new_title = (
-            $title
-            | str replace $"`($from_sha)`" $"`($from_tag)`"
-            | str replace $"`($to_sha)`" $"`($to_tag)`"
+            $raw
+            | str replace $"`($title.old)`" $"`($old_tag)`"
+            | str replace $"`($title.new)`" $"`($new_tag)`"
           )
 
-          if $new_title == $title {
+          if $new_title == $raw {
             print "Title unchanged after substitution; nothing to do."
             exit 0
           }
