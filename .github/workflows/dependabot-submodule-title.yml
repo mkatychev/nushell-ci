@@ -1,0 +1,84 @@
+name: Rewrite Dependabot submodule PR title
+
+# This workflow resolves each SHA in a dependabot submodule bump to the relevant git tag:
+# before:
+#  `chore: bump nushell from `00c9ee0` to `798c55d`
+# after:
+#  `chore: bump nushell from `0.115.0` to `0.115.1`
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  rewrite-title:
+    # Only run for Dependabot submodule bumps of the nushell submodule.
+    if: startsWith(github.head_ref, 'dependabot/submodules/nushell-')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          submodules: recursive
+          # Full history so tags are available for `git tag --points-at`.
+          fetch-depth: 0
+
+      - name: Install Nushell
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/mkatychev/nushell-ci/releases/download/0.115.0/nu-installer.sh | sh
+
+      - name: Fetch submodule tags
+        working-directory: nushell
+        run: git fetch --tags --force origin
+
+      - name: Resolve SHAs to tags and rewrite title
+        shell: nu {0}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          let raw = $env.PR_TITLE
+          print $"Original title: ($raw)"
+
+          # Parse the two backticked SHAs from a title of the form:
+          #   chore: bump nushell from `<old>` to `<new>`
+          let title = $raw | parse '{_}bump nushell from `{old}` to `{new}`' | first
+
+          if ($title | is-empty) {
+              error make "Could not parse SHAs from title; leaving title unchanged."
+          }
+          print $"old=($title.old) new=($title.new)"
+
+          def resolve_tag [sha: string] {
+              git -C nushell tag --points-at $sha
+              | lines
+              | first
+              | default ""
+          }
+
+          let old_tag = (resolve_tag $title.old)
+          let new_tag = (resolve_tag $title.new)
+          print $"old_tag=($old_tag) new_tag=($new_tag)"
+
+          if ($old_tag | is-empty) or ($new_tag | is-empty) {
+              error make "One or both commits are not tagged; leaving title unchanged."
+          }
+
+          let new_title = (
+                      $raw
+                      | str replace $"`($title.old)`" $"`($old_tag)`"
+                      | str replace $"`($title.new)`" $"`($new_tag)`"
+                    )
+
+          if $new_title == $raw {
+              print "Title unchanged after substitution; nothing to do."
+              exit 0
+          }
+
+          print $"New title: ($new_title)"
+          gh pr edit $env.PR_NUMBER --title $new_title
