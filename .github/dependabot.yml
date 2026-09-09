@@ -6,7 +6,7 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "chore"
+      prefix: "chore(nu,submodule)"
     labels:
       - "dependencies"
       - "submodule"
@@ -18,14 +18,3 @@ updates:
     ignore:
       - dependency-name: "nushell"
         versions: [">= 0.0.0-0, < 0.0.1"]
-
-  # Keep GitHub Actions used by the release workflow up to date.
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    commit-message:
-      prefix: "ci"
-    labels:
-      - "dependencies"
-      - "github-actions"
