@@ -20,7 +20,7 @@ install-updater = false
 # Whether default-features should be enabled with cargo build
 default-features = false
 # Features to pass to cargo build
-features = ["network", "plugin", "rustls-tls", "sqlite"]
+features = ["network", "rustls-tls"]
 precise-builds = true
 
 # handle linux-musl problems

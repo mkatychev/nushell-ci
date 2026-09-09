@@ -54,8 +54,10 @@ codegen-units = 1
   RUSTFLAGS="-Zlocation-detail=none" cargo +nightly build
     -Z build-std=std,panic_abort
     -Z build-std-features="optimize_for_size"
+    --profile dist
+    --features (["network", "plugin", "rustls-tls", "sqlite"] | str join ',')
     --no-default-features
-    --profile slim
+  ls target/dist
 )
 ```
 
@@ -100,5 +102,6 @@ Size seems to have been unchanged:
 | slim-4.tar.xz | 4.3 MB |
 | nu-nightly    | 4.3 MB |
 
+---
 
-* copy of https://github.com/nushell/nushell/pull/18949
+This document is a copy of https://github.com/nushell/nushell/pull/18949
