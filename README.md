@@ -8,7 +8,7 @@ Semi-automated[^1] repo providing nushell binaries optimized for CI using [`dist
 The nushell artifacts in this repo try to limit the download artifact size as much as possible while making reasonable compromises:
 
 * omit default feature flags such as `lsp`, `mcp`, and `trash-support` that are unlikely to be used in CI:
-  https://github.com/mkatychev/nushell-ci/blob/a77aa872ed8528450b102d3aa481074f84bb129b/dist-workspace.toml#L20-L23
+  https://github.com/mkatychev/nushell-ci/blob/9fcbb5f7a37dd6e3493a4fe33c4c73b82d867a19/dist-workspace.toml#L22-L23
 * limit release artifact to just the `nu` binary, avoiding bundling of large plugins (such as `nu_plugin_polars`) in the same tarball/zipfile as `nu`:
   ```sh-session
   $ http get https://github.com/nushell/nushell/releases/download/0.115.1/nu-0.115.1-aarch64-unknown-linux-musl.tar.gz
@@ -30,7 +30,7 @@ The nushell artifacts in this repo try to limit the download artifact size as mu
   | nu-0.115.1-aarch64-unknown-linux-musl/nu_plugin_stress_internals | file | 731.0 kB |
   ```
 * use a build profile that is optimized for size[^2]:
-  https://github.com/mkatychev/nushell-ci/blob/021bb7d8d7d733f4f9d5ec22686e88d20a680758/.cargo/config.toml#L1-L5
+  https://github.com/mkatychev/nushell-ci/blob/9fcbb5f7a37dd6e3493a4fe33c4c73b82d867a19/.cargo/config.toml#L1-L6
 
 
 [^1]: https://github.com/mkatychev/nushell-ci/blob/main/.github/dependabot.yml
