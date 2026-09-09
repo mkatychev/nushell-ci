@@ -47,18 +47,18 @@ jobs:
 
           # Parse the two backticked SHAs from a title of the form:
           #   chore: bump nushell from `<old>` to `<new>`
-          let title = ($raw | parse '{_}bump nushell from `{old}` to `{new}`' | first)
+          let title = $raw | parse '{_}bump nushell from `{old}` to `{new}`' | first
 
           if ($title | is-empty) {
-            error make "Could not parse SHAs from title; leaving title unchanged."
+              error make "Could not parse SHAs from title; leaving title unchanged."
           }
           print $"old=($title.old) new=($title.new)"
 
           def resolve_tag [sha: string] {
-            git -C nushell tag --points-at $sha
-            | lines
-            | first
-            | default ""
+              git -C nushell tag --points-at $sha
+              | lines
+              | first
+              | default ""
           }
 
           let old_tag = (resolve_tag $title.old)
@@ -66,18 +66,18 @@ jobs:
           print $"old_tag=($old_tag) new_tag=($new_tag)"
 
           if ($old_tag | is-empty) or ($new_tag | is-empty) {
-            error make "One or both commits are not tagged; leaving title unchanged."
+              error make "One or both commits are not tagged; leaving title unchanged."
           }
 
           let new_title = (
-            $raw
-            | str replace $"`($title.old)`" $"`($old_tag)`"
-            | str replace $"`($title.new)`" $"`($new_tag)`"
-          )
+                      $raw
+                      | str replace $"`($title.old)`" $"`($old_tag)`"
+                      | str replace $"`($title.new)`" $"`($new_tag)`"
+                    )
 
           if $new_title == $raw {
-            print "Title unchanged after substitution; nothing to do."
-            exit 0
+              print "Title unchanged after substitution; nothing to do."
+              exit 0
           }
 
           print $"New title: ($new_title)"
